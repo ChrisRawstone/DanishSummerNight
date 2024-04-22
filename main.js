@@ -4,6 +4,7 @@ import { OBJLoader } from './build/loaders/OBJLoader.js';
 import { GLTFLoader } from './build/loaders/GLTFLoader.js';
 import { PointerLockControls } from './build/controls/PointerLockControls.js';
 import { scene, camera, renderer, controls, velocity, moveBackward, moveForward, moveRight, moveLeft } from './sceneSetup.js';
+import { animate } from './animate.js';
 
 // Ground setup
 var groundTexture = new THREE.TextureLoader().load('textures/jungleground_texture.jpeg');
@@ -44,27 +45,6 @@ for (let i = 0; i < treeCount; i++) {
     loadGLTFModel('models/jungle_tree/scene.gltf', 1, { x: x, y: 0, z: z });
 }
 
-// Animation loop
-var animate = function () {
-    requestAnimationFrame(animate);
 
-    if (controls.isLocked === true) {
-        var delta = 0.1;
-        velocity.x -= velocity.x * 1.0 * delta;
-        velocity.z -= velocity.z * 1.0 * delta;
-
-        if (moveForward) velocity.z -= 5.0 * delta;
-        if (moveBackward) velocity.z += 5.0 * delta;
-        if (moveLeft) velocity.x += 5.0 * delta;
-        if (moveRight) velocity.x -= 5.0 * delta;
-
-        controls.moveRight(-velocity.x * delta);
-        controls.moveForward(-velocity.z * delta);
-    }
-
-    // controls.update();
-
-    renderer.render(scene, camera);
-};
 
 animate();
