@@ -62,6 +62,8 @@ var animate = function () {
         controls.moveForward(-velocity.z * delta);
     }
 
+    // controls.update();
+
     renderer.render(scene, camera);
 };
 

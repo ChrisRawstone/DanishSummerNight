@@ -7,12 +7,6 @@ import { PointerLockControls } from './build/controls/PointerLockControls.js';
 import { scene } from './sceneSetup.js';
 
 
-
-// Controls
-
-
-
-
 // Ground
 var groundTexture = new THREE.TextureLoader().load('textures/jungleground_texture.jpeg');
 groundTexture.wrapS = groundTexture.wrapT = THREE.RepeatWrapping;
