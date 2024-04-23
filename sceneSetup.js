@@ -19,21 +19,14 @@ document.body.appendChild(renderer.domElement);
 camera.lookAt(0, 0, 0);
 
 // Lighting
-// var ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
-// scene.add(ambientLight);
+var ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
+scene.add(ambientLight);
 
-// var directionalLight = new THREE.DirectionalLight(0xffffff, 2.0);
-// directionalLight.position.set(0, 50, 0);
-// directionalLight.castShadow = true;
-// directionalLight.shadow.mapSize.width = 2048;
-// directionalLight.shadow.mapSize.height = 2048;
-// directionalLight.shadow.camera.near = 0.5;
-// directionalLight.shadow.camera.far = 100;
-// directionalLight.shadow.camera.left = -50;
-// directionalLight.shadow.camera.right = 50;
-// directionalLight.shadow.camera.top = 50;
-// directionalLight.shadow.camera.bottom = -50;
-// scene.add(directionalLight);
+var directionalLight = new THREE.DirectionalLight(0xffffff, 2.0);
+directionalLight.position.set(0, 50, 0);
+directionalLight.castShadow = true;
+
+scene.add(directionalLight);
 
 export var controls = new PointerLockControls(camera, renderer.domElement);
 document.addEventListener('click', () => controls.lock());
