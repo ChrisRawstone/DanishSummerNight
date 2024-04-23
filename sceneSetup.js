@@ -91,8 +91,8 @@ document.addEventListener('keyup', onKeyUp);
 export const params = {
     color: '#ffffff',
     scale: 4,
-    flowX: 1,
-    flowY: 1
+    flowX: 0,
+    flowY: 0
 };
 
 

@@ -7,30 +7,61 @@ import { Water } from 'three/addons/objects/Water2.js';
 
 
 
+import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
+
+const gui = new GUI();
+
+const settings = {
+    timeOfDay: 0.5  // Range between 0 (night) and 1 (day)
+};
+
+gui.add(settings, 'timeOfDay', 0, 1).name('Time of Day').onChange(updateLighting);
+
+let sunLight = new THREE.DirectionalLight(0xffffff, 1.0); // White light, full intensity
+sunLight.position.set(100, 100, 100);
+scene.add(sunLight);
 
 
 
-const groundGeometry = new THREE.PlaneGeometry( 20, 20 );
-const groundMaterial = new THREE.MeshStandardMaterial( { roughness: 0.8, metalness: 0.4 } );
-const ground = new THREE.Mesh( groundGeometry, groundMaterial );
-ground.rotation.x = Math.PI * - 0.5;
-scene.add( ground );
 
-const textureLoader = new THREE.TextureLoader();
-textureLoader.load( 'textures/hardwood2_diffuse.jpg', function ( map ) {
+let ambientLight = new THREE.HemisphereLight(0x666666, 0x000000, 0.3); // Soft light from above
+scene.add(ambientLight);
 
-    map.wrapS = THREE.RepeatWrapping;
-    map.wrapT = THREE.RepeatWrapping;
-    map.anisotropy = 16;
-    map.repeat.set( 4, 4 );
-    map.colorSpace = THREE.SRGBColorSpace;
-    groundMaterial.map = map;
-    groundMaterial.needsUpdate = true;
+function updateLighting(value) {
+    const intensity = value * 0.9 + 0.1; // Ensures some light during "night"
+    sunLight.intensity = intensity;
 
-} );
+    // Update light color
+    const nightColor = new THREE.Color(0x5555ff);
+    const dayColor = new THREE.Color(0xffffff);
+    sunLight.color.lerpColors(nightColor, dayColor, value);
+
+    // Update the sun position
+    const angle = Math.PI * (1 - value); // 0 = sunset (west), PI = sunrise (east)
+    sunLight.position.set(100 * Math.cos(angle), 100 * Math.sin(angle), 100 * Math.sin(angle / 2));
+    sunMesh.position.copy(sunLight.position);
+
+    // Update ambient light and background color
+    ambientLight.intensity = 0.3 + value * 0.2;
+    scene.background.lerpColors(new THREE.Color(0x000022), new THREE.Color(0x87ceeb), value);
+}
 
 
-const waterGeometry = new THREE.PlaneGeometry( 20, 20 );
+
+const sunGeometry = new THREE.SphereGeometry(5, 32, 32);
+const sunMaterial = new THREE.MeshBasicMaterial({ color: 0xFFFF00 }); // Bright yellow
+const sunMesh = new THREE.Mesh(sunGeometry, sunMaterial);
+sunMesh.layers.set(0); // Default rendering layer
+scene.add(sunMesh);
+
+
+sunLight.castShadow = true;
+renderer.shadowMap.enabled = true;
+sunMesh.castShadow = false; // The sun itself does not cast a shadow
+sunMesh.receiveShadow = false;
+
+
+const waterGeometry = new THREE.PlaneGeometry( 200, 200 );
 export var water = new Water( waterGeometry, {
     color: params.color,
     scale: params.scale,
@@ -39,7 +70,7 @@ export var water = new Water( waterGeometry, {
     textureHeight: 1024,
 
 } );
-water.position.y = 1;
+water.position.y = -3;
 water.rotation.x = Math.PI * - 0.5;
 scene.add( water );
 
@@ -83,6 +114,7 @@ scene.add( torusKnot );
 
 
 
+updateLighting(settings.timeOfDay);
 
 
 

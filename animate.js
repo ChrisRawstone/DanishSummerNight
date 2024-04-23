@@ -1,8 +1,9 @@
 import * as THREE from 'three';
 import { scene, controls, camera, renderer, moveForward, moveBackward, moveLeft, moveRight, velocity, params } from './sceneSetup.js';
-import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
+
 // import { water } from "./main.js";
 
+import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 // const gui = new GUI();
 
 
