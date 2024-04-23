@@ -19,12 +19,12 @@ document.body.appendChild( renderer.domElement );
 camera.lookAt(0, 0, 0);
 
 // Lighting
-const ambientLight = new THREE.AmbientLight( 0xe7e7e7, 1.2 );
-scene.add( ambientLight );
+// const ambientLight = new THREE.AmbientLight( 0xe7e7e7, 1.2 );
+// scene.add( ambientLight );
 
-const directionalLight = new THREE.DirectionalLight( 0xffffff, 2 );
-directionalLight.position.set( - 1, 1, 1 );
-scene.add( directionalLight );
+// const directionalLight = new THREE.DirectionalLight( 0xffffff, 2 );
+// directionalLight.position.set( - 1, 1, 1 );
+// scene.add( directionalLight );
 
 
 // christian add directional light til dig
