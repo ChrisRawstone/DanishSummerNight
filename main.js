@@ -1,6 +1,4 @@
 import * as THREE from 'three';
-import { MTLLoader } from './build/loaders/MTLLoader.js';
-import { OBJLoader } from './build/loaders/OBJLoader.js';
 import { GLTFLoader } from './build/loaders/GLTFLoader.js';
 import { PointerLockControls } from './build/controls/PointerLockControls.js';
 import { scene, camera, renderer, controls, velocity, moveBackward, moveForward, moveRight, moveLeft } from './sceneSetup.js';
