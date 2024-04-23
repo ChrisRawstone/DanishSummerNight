@@ -1,30 +1,45 @@
 import * as THREE from 'three';
 import { GLTFLoader } from './build/loaders/GLTFLoader.js';
 import { PointerLockControls } from './build/controls/PointerLockControls.js';
-import { scene, camera, renderer, controls, velocity, moveBackward, moveForward, moveRight, moveLeft } from './sceneSetup.js';
+import { scene, camera, renderer, controls, velocity, moveBackward, moveForward, moveRight, moveLeft, params} from './sceneSetup.js';
 import { animate } from './animate.js';
 import { Water } from 'three/addons/objects/Water2.js';
-import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 
 
-const params = {
-    color: '#ffffff',
-    scale: 4,
-    flowX: 1,
-    flowY: 1
-};
+
+
+
+
+const groundGeometry = new THREE.PlaneGeometry( 20, 20 );
+const groundMaterial = new THREE.MeshStandardMaterial( { roughness: 0.8, metalness: 0.4 } );
+const ground = new THREE.Mesh( groundGeometry, groundMaterial );
+ground.rotation.x = Math.PI * - 0.5;
+scene.add( ground );
+
+const textureLoader = new THREE.TextureLoader();
+textureLoader.load( 'textures/hardwood2_diffuse.jpg', function ( map ) {
+
+    map.wrapS = THREE.RepeatWrapping;
+    map.wrapT = THREE.RepeatWrapping;
+    map.anisotropy = 16;
+    map.repeat.set( 4, 4 );
+    map.colorSpace = THREE.SRGBColorSpace;
+    groundMaterial.map = map;
+    groundMaterial.needsUpdate = true;
+
+} );
+
 
 const waterGeometry = new THREE.PlaneGeometry( 20, 20 );
-
-var water = new Water( waterGeometry, {
+export var water = new Water( waterGeometry, {
     color: params.color,
     scale: params.scale,
     flowDirection: new THREE.Vector2( params.flowX, params.flowY ),
     textureWidth: 1024,
-    textureHeight: 1024
-} );
+    textureHeight: 1024,
 
-water.position.y = -5;
+} );
+water.position.y = 1;
 water.rotation.x = Math.PI * - 0.5;
 scene.add( water );
 
@@ -36,16 +51,12 @@ scene.add( water );
 const gltfLoader = new GLTFLoader();
 const loader = new GLTFLoader();
 
-
-
-
-
-// Function to load models
 const loadGLTFModel = (modelPath, scale, position) => {
     gltfLoader.load(modelPath, (gltfScene) => {
         gltfScene.scene.traverse(function (child) {
-            if (child.isMesh) {
-                // child.castShadow = true;
+            if (child.isMesh && child.name === "Object_5338") {
+                child.parent.remove(child);  // Remove Object_5338 from the scene
+            } else {
                 child.receiveShadow = true;
             }
         });
@@ -55,48 +66,23 @@ const loadGLTFModel = (modelPath, scale, position) => {
     });
 };
 
-loadGLTFModel("models/low_poly_tree_scene_free/scene.gltf", 2, { x: 0, y: 0, z: 0 })
-
-
-
-// Tree model paths
-const treeModels = [
-    'models/jungle_tree/scene.gltf',
-    'models/jungle_tree_2/scene.gltf',
-    'models/oak_trees/scene.gltf',
-    'models/realistic_jungle_tree_avatar/scene.gltf'
-];
-
-
-// Jungle tree and jungle tree 2 circle with radius 40
-function generateJungleTreeCircles(radius, treeCount, angleOffset = 0) {
-    for (let i = 0; i < treeCount; i++) {
-        const angle = (i / treeCount) * 2 * Math.PI;
-        const x = radius * Math.cos(angle+angleOffset);
-        const z = radius * Math.sin(angle+angleOffset);
-        const modelIndex = i % 2; // alternate between jungle_tree and jungle_tree_2
-        
-        loadGLTFModel(treeModels[modelIndex], 1, { x: x, y: 0, z: z });
-    }
-}
-
-// generateJungleTreeCircles(40, 10); // Radius 40, 20 trees
-
-
-// Oak trees circle
-function generateOakTreeCircle(radius, treeCount) {
-    for (let i = 0; i < treeCount; i++) {
-        const angle = (i / treeCount) * 2 * Math.PI;
-        const x = radius * Math.cos(angle);
-        const z = radius * Math.sin(angle);
-
-        loadGLTFModel(treeModels[2], 30, { x: x, y: 0, z: z });
-    }
-}
-// generateOakTreeCircle(70, 10); // Radius 70, 20 oak trees
 
 
 loadGLTFModel("models/low_poly_tree_scene_free/scene.gltf", 2, { x: 0, y: 0, z: 0 })
+
+
+
+const torusKnotGeometry = new THREE.TorusKnotGeometry( 3, 1, 256, 32 );
+const torusKnotMaterial = new THREE.MeshNormalMaterial();
+
+var torusKnot = new THREE.Mesh( torusKnotGeometry, torusKnotMaterial );
+torusKnot.position.y = 4;
+torusKnot.scale.set( 0.5, 0.5, 0.5 );
+scene.add( torusKnot );
+
+
+
+
 
 
 

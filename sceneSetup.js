@@ -10,23 +10,24 @@ camera.position.y = 5;
 camera.position.x = 20;
 camera.position.z = 40;
 
-export const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-document.body.appendChild(renderer.domElement);
+
+export var renderer = new THREE.WebGLRenderer( { antialias: true } );
+renderer.setSize( window.innerWidth, window.innerHeight );
+renderer.setPixelRatio( window.devicePixelRatio );
+document.body.appendChild( renderer.domElement );
 
 camera.lookAt(0, 0, 0);
 
 // Lighting
-var ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
-scene.add(ambientLight);
+const ambientLight = new THREE.AmbientLight( 0xe7e7e7, 1.2 );
+scene.add( ambientLight );
 
-var directionalLight = new THREE.DirectionalLight(0xffffff, 2.0);
-directionalLight.position.set(0, 50, 0);
-directionalLight.castShadow = true;
+const directionalLight = new THREE.DirectionalLight( 0xffffff, 2 );
+directionalLight.position.set( - 1, 1, 1 );
+scene.add( directionalLight );
 
-scene.add(directionalLight);
+
+// christian add directional light til dig
 
 export var controls = new PointerLockControls(camera, renderer.domElement);
 document.addEventListener('click', () => controls.lock());
@@ -84,3 +85,15 @@ var onKeyUp = function (event) {
 
 document.addEventListener('keydown', onKeyDown);
 document.addEventListener('keyup', onKeyUp);
+
+
+
+export const params = {
+    color: '#ffffff',
+    scale: 4,
+    flowX: 1,
+    flowY: 1
+};
+
+
+
