@@ -1,60 +1,14 @@
 // Import necessary Three.js components
 import * as THREE from 'three';
 import { GLTFLoader } from './build/loaders/GLTFLoader.js';
-import { Water } from 'three/addons/objects/Water2.js';
 import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 import { PointerLockControls } from './build/controls/PointerLockControls.js';
 import { scene, camera, renderer, controls, params, moveForward, moveBackward, moveLeft, moveRight, velocity } from './sceneSetup.js';
 // import  * as fs from './Fire.js';
 // import { animate } from './animate.js';
+import { createFireflies, addBonfire, water, tube} from './objects.js';
 
 
-
-THREE.Fire = function ( fireTex, color ) {
-
-	var fireMaterial = new THREE.ShaderMaterial( {
-        defines         : THREE.FireShader.defines,
-        uniforms        : THREE.UniformsUtils.clone( THREE.FireShader.uniforms ),
-        vertexShader    : THREE.FireShader.vertexShader,
-        fragmentShader  : THREE.FireShader.fragmentShader,
-		transparent     : true,
-		depthWrite      : false,
-        depthTest       : false
-	} );
-
-    // initialize uniforms 
-
-    fireTex.magFilter = fireTex.minFilter = THREE.LinearFilter;
-    fireTex.wrapS = fireTex.wrapT = THREE.ClampToEdgeWrapping;
-    
-    fireMaterial.uniforms.fireTex.value = fireTex;
-    fireMaterial.uniforms.color.value = color || new THREE.Color( 0xeeeeee );
-    fireMaterial.uniforms.invModelMatrix.value = new THREE.Matrix4();
-    fireMaterial.uniforms.scale.value = new THREE.Vector3( 1, 1, 1 );
-    fireMaterial.uniforms.seed.value = Math.random() * 19.19;
-
-	THREE.Mesh.call( this, new THREE.BoxGeometry( 1.0, 1.0, 1.0 ), fireMaterial );
-};
-
-THREE.Fire.prototype = Object.create( THREE.Mesh.prototype );
-THREE.Fire.prototype.constructor = THREE.Fire;
-
-THREE.Fire.prototype.update = function ( time ) {
-
-    var invModelMatrix = this.material.uniforms.invModelMatrix.value;
-
-    this.updateMatrixWorld();
-    invModelMatrix.getInverse( this.matrixWorld );
-
-    if( time !== undefined ) {
-        this.material.uniforms.time.value = time;
-    }
-
-    this.material.uniforms.invModelMatrix.value = invModelMatrix;
-
-    this.material.uniforms.scale.value = this.scale;
-
-};
 
 // Setup the GUI for dynamic settings
 const gui = new GUI();
@@ -100,25 +54,15 @@ function updateLighting(value) {
     sunSpotlight.position.copy(sunLight.position); // Match the spotlight position with the directional light
     sunSpotlight.target.position.set(0, 0, 0); // Spotlight aims at the scene's center
 
-    ambientLight.intensity = 0.3 + value * 0.2;
+    ambientLight.intensity = 0;
+    // ambientLight.intensity = 0.3 + value * 0.2;
     scene.background.lerpColors(new THREE.Color(0x000022), new THREE.Color(0x87ceeb), value);
 }
 
-// Continue with the rest of your code as is...
 
 
-// Create and add a water body to the scene
-const waterGeometry = new THREE.PlaneGeometry(100, 100);
-const water = new Water(waterGeometry, {
-    color: params.color,
-    scale: params.scale,
-    flowDirection: new THREE.Vector2(params.flowX, params.flowY),
-    textureWidth: 1024,
-    textureHeight: 1024,
-});
-water.position.y = -3;
-water.rotation.x = Math.PI * -0.5;
-scene.add(water);
+
+
 
 // GLTF loader for models
 const gltfLoader = new GLTFLoader();
@@ -127,10 +71,11 @@ const loader = new GLTFLoader();
 const loadGLTFModel = (modelPath, scale, position) => {
     gltfLoader.load(modelPath, (gltfScene) => {
         gltfScene.scene.traverse(function (child) {
-            if (child.isMesh && child.name === "Object_5338") {
+            if (child.name === "Object_5338") {
                 child.parent.remove(child);  // Remove Object_5338 from the scene
             } else {
                 child.receiveShadow = true;
+                child.castShadow = true;
             }
         });
         gltfScene.scene.scale.set(scale, scale, scale);
@@ -145,68 +90,91 @@ loadGLTFModel("models/low_poly_tree_scene_free/scene.gltf", 2, { x: 0, y: 0, z: 
 // Initiate the lighting update and start the animation loop
 updateLighting(settings.timeOfDay);
 
-function addBonfire(position, scale) {
-    const bonfire = new THREE.Group();
-
-    // Logs setup
-    const logMaterial = new THREE.MeshLambertMaterial({ color: 0x8B4513 });
-    const logGeometry = new THREE.CylinderGeometry(0.5, 0.5, 5, 32);
-    for (let i = 0; i < 3; i++) {
-        const log = new THREE.Mesh(logGeometry, logMaterial);
-        log.rotation.z = (i / 3) * Math.PI * 2;
-        log.position.y = 0.25;
-        bonfire.add(log);
-    }
-
-    bonfire.rotation.x = -Math.PI / 2
 
 
-    // Fire light setup
-    const fireLight = new THREE.PointLight(0xff4500, 5, 100);
-    fireLight.position.set(position.x, position.y + 2, position.z);
-    // bonfire.add(fireLight);
 
-    // Flames setup
-    const flameMaterial = new THREE.MeshBasicMaterial({ color: 0xff4500, transparent: true, opacity: 0.75 });
-    const flameGeometry = new THREE.ConeGeometry(1, 3, 32);
-    const flame = new THREE.Mesh(flameGeometry, flameMaterial);
-    flame.position.y = 2;
-    // bonfire.add(flame);
-
-    // Group scaling and positioning
-    bonfire.scale.set(scale, scale, scale);
-    bonfire.position.set(position.x, position.y, position.z);
-
-    scene.add(flame);
-    scene.add(fireLight);
-
-    scene.add(bonfire);
-    return fireLight;  // Important: Return the light object
-}
-
-var textureLoader = new THREE.TextureLoader();
-var tex = textureLoader.load("Fire.png");
-var fire = new THREE.Fire( tex );
-
-scene.add( fire );
 // Declare fireLight at a broader scope
-let fireLight;
+sunLight.shadow.mapSize.width = 2048;  // Higher resolution for shadow map
+sunLight.shadow.mapSize.height = 2048;
+sunLight.shadow.bias = -0.0001;  // Adjust bias to avoid self-shadowing artifacts
+
+sunSpotlight.shadow.mapSize.width = 2048;
+sunSpotlight.shadow.mapSize.height = 2048;
+sunSpotlight.shadow.bias = -0.0001;
+
 
 // Set up the bonfire
-fireLight = addBonfire({ x: 0, y: 0, z: 0 }, 1.5);
+const fireflies = createFireflies(scene, 5);
+const { bonfire, fireLight } = addBonfire({ x: 10, y: -2, z: 30 }, 1.5);
+scene.add(bonfire); // Add bonfire to the scene
+scene.add( tube );
+scene.add(water);
 
-export function animate() {
+
+
+// Setup raycaster and mouse for interaction
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+let isDragging = false;
+
+// Function to handle mouse down event
+function onMouseDown(event) {
+    event.preventDefault();
+
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+    raycaster.setFromCamera(mouse, camera);
+    const intersects = raycaster.intersectObjects(scene.children, true);
+
+    if (intersects.length > 0 && intersects[0].object === bonfire) {
+        isDragging = true;
+    }
+}
+
+// Function to handle mouse move event
+function onMouseMove(event) {
+    if (!isDragging) return;
+
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+    raycaster.setFromCamera(mouse, camera);
+    const intersects = raycaster.intersectObjects([groundPlane]); // assuming `groundPlane` is your ground mesh
+
+    if (intersects.length > 0) {
+        bonfire.position.copy(intersects[0].point);
+    }
+}
+
+// Function to handle mouse up event
+function onMouseUp(event) {
+    isDragging = false;
+}
+
+// Add mouse event listeners
+window.addEventListener('mousedown', onMouseDown, false);
+window.addEventListener('mousemove', onMouseMove, false);
+window.addEventListener('mouseup', onMouseUp, false);
+
+
+
+
+function animate() {
     requestAnimationFrame(animate);
 
-    // Check if fireLight is defined before accessing its properties
-    if (fireLight) {
-        fireLight.intensity = 5 + Math.random() * 100;  // Flickering effect
-    }
-    // fire.update(performance.now() / 1000);
+    const delta = 0.01; // Time step for movement calculations
 
-    // Movement and control logic
+    // Update each firefly's position
+    fireflies.forEach(firefly => firefly.move(0.01));
+
+
+    // Existing lighting and control logic remains the same
+    if (fireLight) {
+        fireLight.intensity = 50 + Math.random() * 100;  // Flickering effect
+    }
+
     if (controls.isLocked === true) {
-        const delta = 0.01;
         velocity.x -= velocity.x * 10.0 * delta;
         velocity.z -= velocity.z * 10.0 * delta;
 
