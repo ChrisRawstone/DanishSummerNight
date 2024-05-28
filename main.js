@@ -6,14 +6,26 @@ import { PointerLockControls } from './build/controls/PointerLockControls.js';
 import { scene, camera, renderer, controls, params, moveForward, moveBackward, moveLeft, moveRight, velocity } from './sceneSetup.js';
 // import  * as fs from './Fire.js';
 // import { animate } from './animate.js';
-import { createFireflies, addBonfire, water, tube} from './objects.js';
+import { createFireflies, addBonfire, water, tube, createStars, setupFire, setupMoon} from './objects.js';
+
+
+
+
+var fire = setupFire(scene);
+scene.add(fire);
+
+// Call createStars function to add stars to the sky
+createStars();
+
+
+setupMoon(scene);
 
 
 
 // Setup the GUI for dynamic settings
 const gui = new GUI();
 const settings = {
-    timeOfDay: 0.01  // Controls the time of day from 0 (night) to 1 (day)
+    timeOfDay: 0.001  // Controls the time of day from 0 (night) to 1 (day)
 };
 gui.add(settings, 'timeOfDay', 0, 1).name('Time of Day').onChange(updateLighting);
 
@@ -77,6 +89,8 @@ const loadGLTFModel = (modelPath, scale, position) => {
                 child.receiveShadow = true;
                 child.castShadow = true;
             }
+            child.receiveShadow = true;
+            child.castShadow = true;
         });
         gltfScene.scene.scale.set(scale, scale, scale);
         gltfScene.scene.position.set(position.x, position.y, position.z);
@@ -165,6 +179,7 @@ function animate() {
 
     const delta = 0.01; // Time step for movement calculations
 
+    fire.update(performance.now() / 1000);
     // Update each firefly's position
     fireflies.forEach(firefly => firefly.move(0.01));
 

@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { Water } from 'three/addons/objects/Water2.js';
 import { scene, camera, renderer, controls, params, moveForward, moveBackward, moveLeft, moveRight, velocity } from './sceneSetup.js';
-
+import { Fire } from './Fire.js';
 
 class Firefly {
     constructor(scene) {
@@ -58,7 +58,12 @@ export function createFireflies(scene, count) {
 export function addBonfire(position, scale) {
     const bonfire = new THREE.Group();
 
-    const logMaterial = new THREE.MeshLambertMaterial({ color: 0x8B4513 });
+    
+    const textureLoader = new THREE.TextureLoader();
+    const woodTexture = textureLoader.load('textures/firewood.jpg'); // Replace with the actual path to your texture image
+
+    const logMaterial = new THREE.MeshLambertMaterial({ map: woodTexture });
+
     const logGeometry = new THREE.CylinderGeometry(0.5, 0.5, 5, 32);
     for (let i = 0; i < 3; i++) {
         const log = new THREE.Mesh(logGeometry, logMaterial);
@@ -72,12 +77,7 @@ export function addBonfire(position, scale) {
     fireLight.position.set(0, 2, 0);
     bonfire.add(fireLight);
 
-    const flameMaterial = new THREE.MeshBasicMaterial({ color: 0xff4500, transparent: true, opacity: 0.75 });
-    const flameGeometry = new THREE.ConeGeometry(1, 2, 32);
-    const flame = new THREE.Mesh(flameGeometry, flameMaterial);
 
-    flame.position.y = 1;
-    bonfire.add(flame);
 
     bonfire.scale.set(scale, scale, scale);
     bonfire.position.set(position.x, position.y, position.z);
@@ -130,3 +130,86 @@ material.map= stone_texture;
 export const tube = new THREE.Mesh( geometry, material );
 
 tube.rotation.z = -Math.PI / 2
+
+
+
+export function createStars() {
+    // Create star visuals
+    const starGeometry = new THREE.BufferGeometry();
+    const starMaterial = new THREE.PointsMaterial({
+        color: 0xffffff,
+        size: 0.2,
+        sizeAttenuation: true,
+        // map: new THREE.TextureLoader().load('star.png'), // Use a texture for stars
+        alphaTest: 0.5,
+        transparent: true
+    });
+
+    const starVertices = [];
+    const numStars = 10000; // Adjust the number of stars for performance
+
+    for (let i = 0; i < numStars; i++) {
+        const x = (Math.random() - 0.5) * 1000;
+        const y = (Math.random() - 0.5)*50+100;
+        const z = (Math.random() - 0.5) * 1000;
+        starVertices.push(x, y, z);
+    }
+
+    starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
+    const stars = new THREE.Points(starGeometry, starMaterial);
+    scene.add(stars);
+}
+
+export function setupFire(scene) {
+    var textureLoader = new THREE.TextureLoader();
+    var tex = textureLoader.load("textures/Fire.png");
+
+    var fire = new Fire(tex);
+    fire.position.set(10, 1, 30);
+    fire.scale.set(5, 5, 5);
+    fire.material.uniforms.magnitude.value = 2.0; 
+
+    return fire;
+}
+
+export function setupMoon(scene) {
+    // Load the moon texture
+    const moonTextureLoader = new THREE.TextureLoader();
+    const moonTexture = moonTextureLoader.load('textures/moon_texture.png'); // Replace with the path to your moon texture
+
+    // Create a sphere geometry for the moon
+    const moonGeometry = new THREE.SphereGeometry(10, 32, 32);
+    const moonMaterial = new THREE.MeshLambertMaterial({
+        map: moonTexture,          // Apply the texture to the moon
+        color: 0xffffff,           // Set the color of the moon
+        emissive: 0xffffff,        // Add some emissive light to the moon
+        emissiveIntensity: 0.04    // Adjust the intensity of the emissive light
+    });
+
+    const moon = new THREE.Mesh(moonGeometry, moonMaterial);
+    moon.position.set(-200, 200, -200); // Position the moon in the sky
+    scene.add(moon);
+
+    // Create a halo effect around the moon
+    const haloGeometry = new THREE.SphereGeometry(11, 32, 32);
+    const haloMaterial = new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+        transparent: true,
+        opacity: 0.2
+    });
+    const halo = new THREE.Mesh(haloGeometry, haloMaterial);
+    halo.position.copy(moon.position);
+    scene.add(halo);
+
+    // Add a point light to simulate moonlight
+    const moonLight = new THREE.PointLight(0xffffff, 5000, 5000);
+    moonLight.position.set(-200, 200, -200); // Position the light at the same place as the moon
+    scene.add(moonLight);
+
+    // Add a spotlight to shine on the moon
+    const spotLight = new THREE.SpotLight(0xffffff, 50000);
+    spotLight.position.set(-100, 100, -100); // Adjust this position as needed
+    spotLight.target = moon; // Point the spotlight at the moon
+    spotLight.castShadow = true;
+    scene.add(spotLight);
+}
